@@ -1,0 +1,44 @@
+PASS: known Modbus 03 request and CRC vector
+PASS: candidate CH4 reads only protocol addresses 6 and 7
+PASS: reference-compatible low-word-first signed negative sample
+PASS: reference-compatible low-word-first positive sample
+PASS: blank factory-specific parameters block device reading
+PASS: broadcast address blocked
+PASS: two-register overflow blocked
+PASS: zero gain blocked
+PASS: NaN coefficient blocked
+PASS: hex protocol addresses
+PASS: negative torque decoding
+PASS: bad CRC rejected
+PASS: wrong station rejected
+PASS: wrong function rejected
+PASS: wrong byte count rejected
+PASS: Modbus exception response rejected
+PASS: Float32 ABCD
+PASS: Int32 ABCD
+PASS: Float32 BADC
+PASS: Int32 BADC
+PASS: Float32 CDAB
+PASS: Int32 CDAB
+PASS: Float32 DCBA
+PASS: Int32 DCBA
+PASS: signed 16-bit
+PASS: unsigned 16-bit
+PASS: 16-bit byte swap
+PASS: unsigned 32-bit
+PASS: NaN device value rejected
+PASS: infinite device value rejected
+PASS: scale, offset, local tare
+PASS: conversion overflow rejected
+PASS: fragmented serial response and prefix noise
+PASS: only 03 and selected register span sent
+PASS: truncated response times out
+PASS: cancellation handled
+PASS: portable settings save and replace round trip
+PASS: CSV flushed while recording
+PASS: Excel-compatible UTF-8 BOM
+PASS: simulation and device rows explicitly distinguished
+PASS: uncalibrated raw samples and user-scaled samples distinguishable in CSV
+PASS: raw and converted values preserved
+TOTAL: 42 passed. No physical device was accessed.
+

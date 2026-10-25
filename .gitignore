@@ -1,0 +1,16 @@
+*.user
+*.suo
+*.obj
+*.pdb
+*.ilk
+*.exe
+*.dll
+*.lib
+*.exp
+*.manifest
+Makefile
+release/
+build/
+CH4-settings.json
+*.csv
+*.log
