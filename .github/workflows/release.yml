@@ -18,10 +18,17 @@ jobs:
           host: windows
           target: desktop
           arch: win64_msvc2019_64
-          modules: 'qtserialport'
       - uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x64
+      - name: Build Qt SerialPort module
+        shell: cmd
+        run: |
+          git clone --depth 1 --branch v5.15.2 https://github.com/qt/qtserialport.git qtserialport-src
+          cd qtserialport-src
+          qmake
+          nmake
+          nmake install
       - name: Build
         shell: cmd
         run: |
