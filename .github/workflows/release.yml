@@ -34,6 +34,17 @@ jobs:
         run: |
           qmake qt\CH4Torque.pro
           nmake
+      - name: Render UI preview without opening a desktop window
+        shell: pwsh
+        run: |
+          $pluginDir = Join-Path (qmake -query QT_INSTALL_PLUGINS) 'platforms'
+          if (-not (Test-Path (Join-Path $pluginDir 'qoffscreen.dll'))) { throw 'Qt offscreen platform plugin was not found.' }
+          $env:QT_QPA_PLATFORM = 'offscreen'
+          $env:QT_QPA_PLATFORM_PLUGIN_PATH = $pluginDir
+          $env:QT_PLUGIN_PATH = (qmake -query QT_INSTALL_PLUGINS)
+          & (Join-Path (Get-Location) 'release\CH4Torque.exe') --capture (Join-Path (Get-Location) 'release\CH4Torque-ui-preview.png')
+          if ($LASTEXITCODE -ne 0) { throw "Qt offscreen preview failed with exit code $LASTEXITCODE." }
+          if ((Get-Item release\CH4Torque-ui-preview.png).Length -lt 50000) { throw 'Qt preview image is unexpectedly small.' }
       - name: Package
         shell: pwsh
         run: |
@@ -49,5 +60,6 @@ jobs:
           generate_release_notes: true
           files: |
             release/CH4Torque-windows-x64.zip
+            release/CH4Torque-ui-preview.png
             release/SHA256SUMS.txt
             online-install.ps1

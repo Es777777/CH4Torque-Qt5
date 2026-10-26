@@ -24,6 +24,15 @@ public:
         update();
     }
     void clear() { points.clear(); update(); }
+    void setDemoPreview() {
+        points.clear();
+        const qint64 now = QDateTime::currentMSecsSinceEpoch();
+        for (int i = 0; i <= 48; ++i) {
+            const double phase = i * 0.31;
+            points.push_back(qMakePair(now - (48 - i) * 1200, 278.0 + 7.0 * std::sin(phase) + 1.8 * std::sin(phase * 2.4)));
+        }
+        update();
+    }
 protected:
     void paintEvent(QPaintEvent *) override {
         QPainter painter(this);
@@ -250,6 +259,15 @@ public:
         loadSettings();
         refreshPorts();
     }
+    void prepareScreenshot() {
+        status->setText(QStringLiteral("模拟数据 · 非实测"));
+        value->setText(QStringLiteral("284.6"));
+        unit->setText(QStringLiteral("模拟读数 / 非实测"));
+        plot->setDemoPreview();
+        log->setPlainText(QStringLiteral("演示预览：以下内容为模拟数据，不来自变送器。\nTX  示例请求帧（功能码 03）\nRX  示例响应帧（CRC 校验通过）\n原始值=284.6  模式=DEMO_SIMULATED"));
+        demo->setText(QStringLiteral("停止演示"));
+        start->setEnabled(false);
+    }
 private slots:
     void refreshPorts() {
         const QString previous = port->currentText();
@@ -466,6 +484,15 @@ int main(int argc, char **argv) {
     QApplication app(argc, argv);
     app.setOrganizationName("CH4Torque");
     Window window;
+    const QStringList arguments = app.arguments();
+    const int captureIndex = arguments.indexOf(QStringLiteral("--capture"));
+    if (captureIndex >= 0) {
+        if (captureIndex + 1 >= arguments.size()) return 2;
+        window.prepareScreenshot();
+        window.show();
+        app.processEvents();
+        return window.grab().save(arguments[captureIndex + 1], "PNG") ? 0 : 3;
+    }
     window.show();
     return app.exec();
 }
