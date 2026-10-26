@@ -38,6 +38,9 @@ jobs:
       - name: Render UI preview without opening a desktop window
         shell: pwsh
         run: |
+          $fontPath = Join-Path (Get-Location) 'release\NotoSansCJKsc-Regular.otf'
+          Invoke-WebRequest -Uri 'https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTF/SimplifiedChinese/NotoSansCJKsc-Regular.otf' -OutFile $fontPath
+          $env:CH4TORQUE_PREVIEW_FONT = $fontPath
           $pluginDir = Join-Path (qmake -query QT_INSTALL_PLUGINS) 'platforms'
           if (-not (Test-Path (Join-Path $pluginDir 'qoffscreen.dll'))) { throw 'Qt offscreen platform plugin was not found.' }
           $env:QT_QPA_PLATFORM = 'offscreen'

@@ -483,9 +483,16 @@ private:
 int main(int argc, char **argv) {
     QApplication app(argc, argv);
     app.setOrganizationName("CH4Torque");
-    Window window;
     const QStringList arguments = app.arguments();
     const int captureIndex = arguments.indexOf(QStringLiteral("--capture"));
+    const QByteArray previewFontPath = qgetenv("CH4TORQUE_PREVIEW_FONT");
+    if (captureIndex >= 0 && !previewFontPath.isEmpty()) {
+        const int fontId = QFontDatabase::addApplicationFont(QString::fromLocal8Bit(previewFontPath));
+        const QStringList fontFamilies = QFontDatabase::applicationFontFamilies(fontId);
+        if (fontId < 0 || fontFamilies.isEmpty()) return 5;
+        app.setFont(QFont(fontFamilies.first(), 9));
+    }
+    Window window;
     if (captureIndex >= 0) {
         if (captureIndex + 1 >= arguments.size()) return 2;
         window.prepareScreenshot();
