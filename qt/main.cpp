@@ -491,7 +491,11 @@ int main(int argc, char **argv) {
         window.prepareScreenshot();
         window.show();
         app.processEvents();
-        return window.grab().save(arguments[captureIndex + 1], "PNG") ? 0 : 3;
+        const QString output = QFileInfo(arguments[captureIndex + 1]).absoluteFilePath();
+        const QPixmap image = window.grab();
+        if (image.isNull() || image.size().width() < 900 || image.size().height() < 640) return 3;
+        if (!image.save(output, "PNG") || !QFileInfo::exists(output)) return 4;
+        return 0;
     }
     window.show();
     return app.exec();

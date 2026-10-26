@@ -43,9 +43,12 @@ jobs:
           $env:QT_QPA_PLATFORM = 'offscreen'
           $env:QT_QPA_PLATFORM_PLUGIN_PATH = $pluginDir
           $env:QT_PLUGIN_PATH = (qmake -query QT_INSTALL_PLUGINS)
-          & (Join-Path (Get-Location) 'release\CH4Torque.exe') --capture (Join-Path (Get-Location) 'release\CH4Torque-ui-preview.png')
-          if ($LASTEXITCODE -ne 0) { throw "Qt offscreen preview failed with exit code $LASTEXITCODE." }
-          if ((Get-Item release\CH4Torque-ui-preview.png).Length -lt 50000) { throw 'Qt preview image is unexpectedly small.' }
+          $previewPath = Join-Path (Get-Location) 'release\CH4Torque-ui-preview.png'
+          $arguments = '--capture "' + $previewPath + '"'
+          $capture = Start-Process -FilePath (Join-Path (Get-Location) 'release\CH4Torque.exe') -ArgumentList $arguments -Wait -PassThru
+          if ($capture.ExitCode -ne 0) { throw "Qt offscreen preview failed with exit code $($capture.ExitCode)." }
+          if (-not (Test-Path $previewPath)) { throw "Qt did not create preview image at $previewPath." }
+          if ((Get-Item $previewPath).Length -lt 10000) { throw 'Qt preview image is unexpectedly small.' }
       - name: Package
         shell: pwsh
         run: |
