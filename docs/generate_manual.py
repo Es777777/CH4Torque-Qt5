@@ -20,7 +20,7 @@ from reportlab.platypus import (
 
 
 ROOT = Path(__file__).resolve().parent
-OUT = ROOT / "用户说明书.pdf"
+OUT = ROOT / "CH4Torque-Qt5-User-Manual-CN.pdf"
 SCREENSHOT = ROOT / "CH4Torque-ui-preview.png"
 FONT = Path("C:/Windows/Fonts/msyh.ttc")
 pdfmetrics.registerFont(TTFont("MicrosoftYaHei", str(FONT), subfontIndex=0))

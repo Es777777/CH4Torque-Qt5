@@ -61,7 +61,7 @@ Windows release 构建基于 Qt 5.15.2 MSVC 2019 x64，并在 CI 中运行 Qt of
 
 ![CH4Torque Qt 5 界面预览（模拟数据，非实测）](docs/CH4Torque-ui-preview.png)
 
-图中为软件演示数据，用于展示界面布局和趋势图，不是变送器实测结果。完整中文操作说明见 [用户说明书 PDF](docs/用户说明书.pdf)。
+图中为软件演示数据，用于展示界面布局和趋势图，不是变送器实测结果。完整中文操作说明见 [用户说明书 PDF](docs/CH4Torque-Qt5-User-Manual-CN.pdf)。
 
 - **串口：** 可用端口列表；刷新按钮重新枚举系统串口。
 - **波特率：** 仅提供界面列出的常见波特率。数据位固定 8、校验固定 None、停止位固定 1（8N1）。
@@ -112,5 +112,5 @@ Release 可执行文件生成在 `release\CH4Torque.exe`。若使用其他 Qt 5 
 
 - `qt/`：Qt 5/C++ 桌面程序。
 - `source/`：原 C# 版本、构建脚本和协议自测代码。
-- `docs/用户说明书.pdf`：含实际程序界面截图的中文版操作说明。
+- `docs/CH4Torque-Qt5-User-Manual-CN.pdf`：含实际程序界面截图的中文版操作说明。
 - `online-install.ps1`、`offline-install.bat`：在线和离线安装入口。
