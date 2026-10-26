@@ -1,35 +1,83 @@
-# CH4 Torque Monitor
+# CH4 力矩采集上位机
 
-Qt 5 desktop frontend for read-only CH4 torque monitoring over RS-485 / Modbus RTU. The Qt application is under `qt/`. The original verified C# implementation and its test records remain under `source/` and in the Chinese notes for reference.
+面向中诺 ZNSV6-F4-485 变送器 CH4 通道的 Windows 桌面采集工具。Qt 5 前端通过 RS-485 使用 Modbus RTU 功能码 `03` 轮询寄存器，显示原始读数、最近 60 秒趋势，并可保存 CSV。程序只读设备寄存器，不发送设备清零、标定或参数写入指令。
 
-## Features
+> **读数说明：** 默认地址、数据类型和字节序是针对现有设备做过只读响应核对的候选值。读数仍是未标定原始计数，不能据此宣称 N·m 绝对力矩或测量精度。请以设备厂家寄存器表和已知力矩标定结果为准。
 
-- Qt 5 Widgets interface with live trend, serial selection, protocol settings, and demo mode.
-- Modbus RTU function `03` only. The application does not write registers or issue device zero/calibration commands.
-- Configurable station, CH4 register address, data type, byte order, baud rate, and polling interval.
-- Optional CSV recording. Rows identify live samples as uncalibrated raw values.
-- Settings are stored by `QSettings` in the current user's application settings, not in the repository.
+## 下载与安装
 
-The default address/type/order are the candidate CH4 values previously checked against one device. Verify these against the actual transmitter. Raw counts are not calibrated torque; use known torque and manufacturer documentation before interpreting them as N·m. The included device notes describe the scope and limits of the earlier read-only verification.
+最新版本：[GitHub Releases](https://github.com/Es777777/CH4Torque-Qt5/releases/latest)。每个版本有以下文件：
 
-## Build on Windows
+| 文件 | 用途 |
+| --- | --- |
+| `CH4Torque-windows-x64.zip` | 离线包，包含程序、Qt DLL、VC++ 运行库和离线启动脚本。解压后运行 `offline-install.bat`。首次安装 VC++ 运行库时 Windows 可能要求管理员确认。 |
+| `online-install.ps1` | 在线安装器。检查 64 位 Windows 与 VC++ 运行库；缺少时从 Microsoft 下载运行库；从 GitHub 获取最新版程序包、验证 SHA-256，然后安装到 `%LOCALAPPDATA%\CH4Torque` 并创建桌面快捷方式。 |
+| `SHA256SUMS.txt` | 离线 ZIP 的 SHA-256 校验值。 |
 
-Install Qt 5.15.2 with the MSVC 2019 64-bit kit and Qt Serial Port, then open `qt/CH4Torque.pro` in Qt Creator or run from a Visual Studio developer prompt:
+在线安装器需要访问 GitHub 和 Microsoft 下载站点。网络受限时下载离线 ZIP，并在可联网电脑先获取完整压缩包。离线 ZIP 自带 VC++ 安装程序，不需要 Qt Creator、Python 或开发环境。
+
+## 快速开始
+
+1. 将变送器通过 RS-485/USB 转换器接入电脑，确认驱动已安装。
+2. 关闭其他正在占用该串口的软件。
+3. 启动程序，在“串口”选择对应的 COM 口，点击“刷新”可重新扫描。
+4. 核对波特率、站号、CH4 起始地址、数据类型、字节序和轮询周期。现有设备核对时使用 `115200`、站号 `1`、地址 `6`、`Int32`、`CDAB`、`100 ms`、`8N1`；接线、设备或寄存器配置变化时必须重新确认。
+5. 点击“开始采集”。确认状态栏显示“只读采集中”和正确串口，再观察数值、趋势图和通信日志。
+6. 要保存数据，点击“开始记录 CSV”，选择文件位置；结束时点击“停止 CSV 记录”。
+7. 点击“停止”结束采集并释放串口。点击“保存设置”保存常用参数。
+
+第一次连接建议先保持“显示原始值（未标定）”，用已知的设备动作验证读数是否合理。点击“演示数据”可查看界面趋势动画；演示值是模拟数据，不代表实测结果。
+
+## 界面与参数
+
+- **串口：** 可用端口列表；刷新按钮重新枚举系统串口。
+- **波特率：** 仅提供界面列出的常见波特率。数据位固定 8、校验固定 None、停止位固定 1（8N1）。
+- **站号：** Modbus 从站地址 1 至 247；不接受广播地址。
+- **CH4 起始地址：** 十进制或 `0x` 开头的十六进制地址，范围 0 至 65535。32 位类型连续读取两个 16 位寄存器。
+- **数据类型：** `Int16`、`UInt16`、`Int32`、`UInt32`、`Float32`。类型宽度须与字节序选择相符。
+- **字节序：** 16 位使用 `AB`/`BA`；32 位使用 `ABCD`、`BADC`、`CDAB` 或 `DCBA`。具体顺序取决于变送器寄存器定义。
+- **轮询周期：** 50 至 10000 ms。它是电脑发起请求的间隔，不等于变送器内部 ADC 采样率。
+- **趋势图：** 保留最近 60 秒样本；长时间数据请使用 CSV。
+- **通信日志：** 显示 TX/RX 十六进制帧和异常。CRC、站号、功能码、长度或数值校验失败的帧不会作为有效读数展示。
+- **CSV：** UTF-8 文本，包含 UTC 时间、原始数值和模式标记 `DEVICE_RAW_UNCALIBRATED`。使用 Excel 导入时选择 UTF-8。
+- **设置：** 使用 Windows 当前用户的 `QSettings` 保存，不写入设备，也不保存到程序目录。
+
+## 标定与单位
+
+应用当前面向原始值读取，不执行力矩换算。只有当厂家确认寄存器已直接输出 N·m，或已用可溯源的已知力矩完成标定后，才能将数据解释为力矩。若进行两点线性标定，记录未去皮原始空载值 `R0` 和施加已知力矩 `T1` 时的原始值 `R1`，计算 `K = T1 / (R1 - R0)`、`b = -K × R0`，并用其他已知点复核。铭牌上的 mV/V 灵敏度不能直接当作计数到 N·m 的换算系数。
+
+## 常见问题
+
+| 现象 | 检查项 |
+| --- | --- |
+| 串口列表为空 | 检查 USB-RS485 驱动、设备连接和 Windows 设备管理器，然后刷新。 |
+| 串口打开失败 | 确认 COM 口未被其他程序占用；拔插转换器后重新刷新。 |
+| 没有有效读数 | 核对 A/B 接线、波特率、站号、地址和数据类型；确认变送器供电及 CH4 通道状态。 |
+| CRC/长度异常 | 检查串口参数、线路干扰、响应设备以及寄存器宽度。 |
+| 数值不符合力矩直觉 | 先核实寄存器编码/字节序和计数标度；当前值没有经过绝对力矩标定。 |
+| CSV 文件为空 | 确认已开始串口采集且路径可写；仅有效设备响应写入设备原始模式行。 |
+| 在线安装被拦截 | 使用离线 ZIP；检查组织策略、网络访问 GitHub/Microsoft 的限制及 Windows 安全提示。 |
+
+## 安全范围与验证记录
+
+程序只发送功能码 `03` 读取当前配置地址，不轮询 CH1 至 CH3，不提供设备写入或清零命令。硬件连接和操作仍应遵循变送器厂家的电气规范。此前实机记录只验证特定设备的只读响应和加载变化，不代表所有设备、全部量程或测量精度。
+
+`source/` 保留原始 C# WinForms 版本与其验证代码；`软件测试结果.txt` 中的 42 项测试针对该 C# 协议实现。Qt 前端的 Windows 构建由 GitHub Actions 完成，使用 Qt 5.15.2、MSVC 2019 ABI，并在打包前构建 Qt SerialPort 5.15.2。
+
+## 从源码构建
+
+使用 Windows 64 位 Qt 5.15.2 MSVC 2019 Kit，包含 Qt Widgets、Qt SerialPort、MSVC 编译器和 Windows SDK。在 Qt 命令环境中：
 
 ```powershell
 qmake qt\CH4Torque.pro
 nmake
 ```
 
-## Windows packages
+Release 可执行文件生成在 `release\CH4Torque.exe`。若使用其他 Qt 5 小版本，需以同版本构建 Qt SerialPort 模块后再链接。
 
-Every GitHub Release provides two choices:
+## 目录
 
-- **Offline:** `CH4Torque-windows-x64.zip` includes the application, Qt runtime DLLs, and Microsoft Visual C++ Redistributable. Extract it and run `offline-install.bat`; it checks/installs the bundled runtime and launches the app without internet access.
-- **Online:** run `online-install.ps1` in PowerShell. It checks for 64-bit Windows, detects the VC++ runtime and downloads it from Microsoft when missing, downloads the latest app package from GitHub, verifies its SHA-256, installs it under `%LOCALAPPDATA%\CH4Torque`, and creates a desktop shortcut. Administrator approval may be requested for the VC++ runtime installation.
-
-GitHub Actions builds and publishes both packages when a `v*` tag is pushed. The build uses Qt 5.15.2 MSVC 2019 and deploys required Qt runtime files into the offline package.
-
-## Prior verification
-
-`软件测试结果.txt` records 42 passing tests for the original C# protocol implementation. `实机首次只读查询.txt` records the earlier device checks. Neither record claims calibration or measurement accuracy. No physical device is accessed by the automated tests.
+- `qt/`：Qt 5/C++ 桌面程序。
+- `source/`：原 C# 版本、构建脚本和协议自测代码。
+- `docs/用户说明书.pdf`：含实际程序界面截图的中文版操作说明。
+- `online-install.ps1`、`offline-install.bat`：在线和离线安装入口。
