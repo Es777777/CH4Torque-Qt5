@@ -40,7 +40,7 @@ jobs:
           New-Item -ItemType Directory -Force release\CH4Torque | Out-Null
           Copy-Item release\CH4Torque.exe release\CH4Torque\
           windeployqt --release --compiler-runtime --no-translations release\CH4Torque\CH4Torque.exe
-          Copy-Item README.md, LICENSE release\CH4Torque\
+          Copy-Item README.md, LICENSE, offline-install.bat release\CH4Torque\
           Compress-Archive -Path release\CH4Torque\* -DestinationPath release\CH4Torque-windows-x64.zip -Force
           $hash = (Get-FileHash release\CH4Torque-windows-x64.zip -Algorithm SHA256).Hash.ToLower()
           "$hash  CH4Torque-windows-x64.zip" | Set-Content release\SHA256SUMS.txt -Encoding ascii

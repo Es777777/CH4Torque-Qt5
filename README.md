@@ -25,7 +25,7 @@ nmake
 
 Every GitHub Release provides two choices:
 
-- **Offline:** `CH4Torque-windows-x64.zip` includes the application and Qt runtime DLLs. Extract it and run `CH4Torque.exe`; no Qt installation or internet connection is needed. Microsoft Visual C++ 2015-2022 x64 Runtime may still be required.
+- **Offline:** `CH4Torque-windows-x64.zip` includes the application, Qt runtime DLLs, and Microsoft Visual C++ Redistributable. Extract it and run `offline-install.bat`; it checks/installs the bundled runtime and launches the app without internet access.
 - **Online:** run `online-install.ps1` in PowerShell. It checks for 64-bit Windows, detects the VC++ runtime and downloads it from Microsoft when missing, downloads the latest app package from GitHub, verifies its SHA-256, installs it under `%LOCALAPPDATA%\CH4Torque`, and creates a desktop shortcut. Administrator approval may be requested for the VC++ runtime installation.
 
 GitHub Actions builds and publishes both packages when a `v*` tag is pushed. The build uses Qt 5.15.2 MSVC 2019 and deploys required Qt runtime files into the offline package.
